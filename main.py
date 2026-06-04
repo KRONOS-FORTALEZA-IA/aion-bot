@@ -42,7 +42,7 @@ async def botones(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("❌ No tienes permisos", reply_markup=menu_principal())
 
 def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(botones))
     logger.info("CONCLAVE BOT v3.0 ONLINE 🔥 Con Menú")
