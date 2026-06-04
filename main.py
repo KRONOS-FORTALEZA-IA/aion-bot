@@ -1,43 +1,51 @@
 import os
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 from dotenv import load_dotenv
 from pathlib import Path
 import json
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = os.getenv("ADMIN_ID")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
-if not BOT_TOKEN:
-    raise ValueError("Falta BOT_TOKEN en las variables de entorno")
-if not ADMIN_ID:
-    raise ValueError("Falta ADMIN_ID en las variables de entorno")
-ADMIN_ID = int(ADMIN_ID)
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-USERS_FILE = Path(__file__).parent / "users.json"
-
-def load_users():
-    if not USERS_FILE.exists():
-        USERS_FILE.write_text("{}", encoding="utf-8")
-        return {}
-    with USERS_FILE.open("r", encoding="utf-8") as f:
-        return json.load(f)
+def menu_principal():
+    keyboard = [
+        [InlineKeyboardButton("🔥 Confesar", callback_data="confesar")],
+        [InlineKeyboardButton("📊 Ranking", callback_data="ranking")],
+        [InlineKeyboardButton("👑 Admin", callback_data="admin")]
+    ]
+    return InlineKeyboardMarkup(keyboard)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('CONCLAVE BOT v3.0 ONLINE 🔥')
+    await update.message.reply_text(
+        "🔥 BIENVENIDO A CONCLAVE BOT v3.0 🔥\n\nElige una opción:",
+        reply_markup=menu_principal()
+    )
+
+async def botones(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data == "confesar":
+        await query.edit_message_text("Escribe tu confesión y te la paso al admin anónimo 👻")
+    elif query.data == "ranking":
+        await query.edit_message_text("📊 TOP 10 Próximamente...", reply_markup=menu_principal())
+    elif query.data == "admin":
+        if query.from_user.id == ADMIN_ID:
+            await query.edit_message_text("👑 Panel Admin Activado", reply_markup=menu_principal())
+        else:
+            await query.edit_message_text("❌ No tienes permisos", reply_markup=menu_principal())
 
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
-    logger.info("Iniciando CONCLAVE BOT v3.0")
+    app.add_handler(CallbackQueryHandler(botones))
+    logger.info("CONCLAVE BOT v3.0 ONLINE 🔥 Con Menú")
     app.run_polling()
 
 if __name__ == '__main__':
