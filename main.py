@@ -1,58 +1,47 @@
-#!/usr/bin/env python3
-"""
-╔══════════════════════════════════════════════════════════╗
-║         CÓNCLAVE BOT v3.0 — "EL CONFESIONARIO"          ║
-║         python-telegram-bot v20.7+  |  asyncio           ║
-╚══════════════════════════════════════════════════════════╝
-
-INSTALACIÓN:
-    pip install python-telegram-bot python-dotenv
-
-CONFIGURACIÓN (.env):
-    BOT_TOKEN=tu_token_aqui        ← Obténlo de @BotFather en Telegram
-    ADMIN_ID=tu_user_id_aqui       ← Obténlo hablando con @userinfobot en Telegram
-
-CÓMO SACAR TU ADMIN_ID:
-    1. Abre Telegram y busca @userinfobot
-    2. Escríbele /start
-    3. Te responderá con tu ID numérico (ej: 123456789)
-    4. Copia ese número en ADMIN_ID=
-
-CÓMO CORRER:
-    python main.py
-    (En Replit: el workflow "Cónclave Bot" lo inicia automáticamente)
-"""
-
-import json
-import logging
 import os
-import random
-from datetime import datetime, timezone
-from pathlib import Path
-
+import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, ContextTypes, filters
 from dotenv import load_dotenv
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import (
-    ApplicationBuilder,
-    CallbackQueryHandler,
-    CommandHandler,
-    ContextTypes,
-    MessageHandler,
-    filters,
-)
+from pathlib import Path
+import json
 
-# ─── Cargar variables de entorno ──────────────────────────────────────────────
 load_dotenv()
-
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 if not BOT_TOKEN:
-    raise ValueError("❌ Falta BOT_TOKEN en las variables de entorno / archivo .env")
+    raise ValueError("Falta BOT_TOKEN en las variables de entorno")
 if not ADMIN_ID:
-    raise ValueError("❌ Falta ADMIN_ID en las variables de entorno / archivo .env")
-
+    raise ValueError("Falta ADMIN_ID en las variables de entorno")
 ADMIN_ID = int(ADMIN_ID)
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+USERS_FILE = Path(__file__).parent / "users.json"
+
+def load_users():
+    if not USERS_FILE.exists():
+        USERS_FILE.write_text("{}", encoding="utf-8")
+        return {}
+    with USERS_FILE.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text('CONCLAVE BOT v3.0 ONLINE 🔥')
+
+def main():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    logger.info("Iniciando CONCLAVE BOT v3.0")
+    app.run_polling()
+
+if __name__ == '__main__':
+    main()
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
