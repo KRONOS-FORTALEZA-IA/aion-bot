@@ -1,7 +1,7 @@
 import os
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import Application, ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 from dotenv import load_dotenv
 from pathlib import Path
 import json
